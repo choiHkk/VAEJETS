@@ -1,5 +1,5 @@
 ## Introduction
-1. FastSpeech2, HiFi-GAN 오픈 소스를 활용하여 VAEJETS(End-To-End)를 간단 구현하고 한국어 데이터셋(KSS)을 사용해 빠르게 학습합니다.
+1. FastSpeech2, HiFi-GAN 오픈 소스를 활용하여 VAEJETS(End-To-End, CVAE, NFs)를 간단 구현하고 한국어 데이터셋(KSS)을 사용해 빠르게 학습합니다.
 2. 기존 오픈소스는 MFA기반 preprocessing을 진행한 상태에서 학습을 진행하지만 본 레포지토리에서는 alignment learning 기반 학습을 진행하고 preprocessing으로 인해 발생할 수 있는 디스크 용량 문제를 방지하기 위해 data_utils.py로부터 학습 데이터가 feeding됩니다.
 3. conda 환경으로 진행해도 무방하지만 본 레포지토리에서는 docker 환경만 제공합니다. 기본적으로 ubuntu에 docker, nvidia-docker가 설치되었다고 가정합니다.
 4. GPU, CUDA 종류에 따라 Dockerfile 상단 torch image 수정이 필요할 수도 있습니다.
