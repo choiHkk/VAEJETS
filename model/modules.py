@@ -142,7 +142,7 @@ class VarianceAdaptor(nn.Module):
             attn_h = self.binarize_attention_parallel(attn_s, src_len, mel_len).detach()
             duration_rounded = attn_h.sum(2)[:, 0, :]
             if step < self.binarization_start_steps:
-                x = torch.bmm(attn_s.squeeze(1),x)
+                x = torch.bmm(attn_s.squeeze(1).detach(), x)
             else:
                 x, mel_len = self.length_regulator(x, duration_rounded, max_mel_len)
         else:
