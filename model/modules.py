@@ -66,6 +66,7 @@ class VarianceAdaptor(nn.Module):
         
         self.pitch_embedding = nn.Embedding(n_bins, self.encoder_hidden)
         self.energy_embedding = nn.Embedding(n_bins, self.encoder_hidden)
+        self.linear_d_g = Linear(self.gin_channels, self.encoder_hidden)
         self.linear_p_g = Linear(self.gin_channels, self.encoder_hidden)
         self.linear_e_g = Linear(self.gin_channels, self.encoder_hidden)
         
@@ -134,7 +135,8 @@ class VarianceAdaptor(nn.Module):
         gen=False, 
     ):
         memory = x.clone()
-        log_duration_prediction = self.duration_predictor(x, src_mask)
+        g_d = self.linear_p_g(g.transpose(1,2))
+        log_duration_prediction = self.duration_predictor((x.detach()+g_d.detach()), src_mask)
         
         if not gen:
             attn_s, attn_logprob = self.aligner(
