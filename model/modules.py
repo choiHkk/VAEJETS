@@ -10,6 +10,7 @@ from torch.nn.utils import weight_norm, remove_weight_norm, spectral_norm
 from utils.tools import get_mask_from_lengths, b_mas, pad, init_weights, get_padding
 from .layers import Linear, Conv
 from utils import pitch_utils
+from transformer.Models import get_sinusoid_encoding_table
 
 LRELU_SLOPE = 0.1
 
@@ -35,6 +36,7 @@ class VarianceAdaptor(nn.Module):
         self.energy_feature_level = preprocess_config["preprocessing"]["energy"]["feature"]
         self.preprocess_config = preprocess_config
         self.preprocess_config["preprocessing"]["pitch"]["cwt_scales"] = pitch_utils.get_lf0_cwt(np.ones(10))[1]
+        self.n_position = model_config["max_seq_len"] + 1
         assert self.pitch_feature_level == "frame_level"
         assert self.energy_feature_level == "frame_level"
 
@@ -71,6 +73,11 @@ class VarianceAdaptor(nn.Module):
         self.linear_e_g = Linear(self.gin_channels, self.encoder_hidden)
         
         self.post_projection = Linear(self.encoder_hidden, self.encoder_hidden*2)
+        
+        self.position_enc = nn.Parameter(
+            get_sinusoid_encoding_table(self.n_position, self.encoder_hidden).unsqueeze(0),
+            requires_grad=False,
+        )
         
     def binarize_attention_parallel(self, attn, in_lens, out_lens):
         """For training purposes only. Binarizes attention with MAS.
@@ -177,6 +184,17 @@ class VarianceAdaptor(nn.Module):
         energy_prediction, energy_embedding = self.get_energy_embedding(
             x, energy_target, mel_mask, e_control, g)
         x = x + energy_embedding
+        
+        if not gen:
+            x = x + get_sinusoid_encoding_table(
+                x.shape[1], self.encoder_hidden
+            )[: x.shape[1], :].unsqueeze(0).expand(x.size(0), -1, -1).to(
+                x.device
+            )
+        else:
+            if max_mel_len is None:
+                max_mel_len = mel_len.max().item()
+            x = x[:,:max_mel_len,:] + self.position_enc[:,:max_mel_len,:].expand(x.size(0),-1,-1)
         
         x = self.post_projection(x).transpose(1,2)
         m, logs = torch.split(x, self.encoder_hidden, dim=1)

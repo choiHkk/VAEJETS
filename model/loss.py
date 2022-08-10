@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.cuda.amp import autocast
 from mel_processing import mel_spectrogram_torch
-
+from utils.stft_loss import MultiResolutionSTFTLoss
 
     
 class VAEJETSLoss(nn.Module):
@@ -40,6 +40,11 @@ class SynthesizerLoss(nn.Module):
         self.energy_feature_level = preprocess_config["preprocessing"]["energy"]["feature"]
         self.binarization_loss_enable_steps = train_config['duration']['binarization_loss_enable_steps']
         self.binarization_loss_warmup_steps = train_config['duration']['binarization_loss_warmup_steps']
+        self.stft_loss_fn = MultiResolutionSTFTLoss(
+            [1024, 2048, 512],
+            [128, 256, 64],
+            [1024, 2048, 512],
+        )
         self.mse_loss = nn.MSELoss()
         self.mae_loss = nn.L1Loss()
         self.sum_loss = ForwardSumLoss()
@@ -73,7 +78,7 @@ class SynthesizerLoss(nn.Module):
             uv_targets,
             energy_targets,
             _, 
-            _
+            wav_targets, 
         ) = inputs
         
         (
@@ -114,7 +119,7 @@ class SynthesizerLoss(nn.Module):
         (cwt_spec_predictions, cwt_mean_predictions, cwt_std_predictions) = pitch_predictions
         cwt_spec_predictions, uv_predictions = cwt_spec_predictions[:, :, :10], cwt_spec_predictions[:,:,-1]
         
-        cwt_spec_loss = self.mse_loss(cwt_spec_predictions, cwt_spec_targets)
+        cwt_spec_loss = self.mae_loss(cwt_spec_predictions, cwt_spec_targets)
         cwt_mean_loss = self.mse_loss(cwt_mean_predictions, cwt_mean_targets)
         cwt_std_loss = self.mse_loss(cwt_std_predictions, cwt_std_targets)
         
@@ -133,11 +138,13 @@ class SynthesizerLoss(nn.Module):
         log_duration_predictions = log_duration_predictions.masked_select(src_masks)
         log_duration_targets = log_duration_targets.masked_select(src_masks)
         
-        mel_predictions = self.get_mel(wav_predictions)[...,:indices[1]-indices[0]]
- 
-        mel_targets = mel_targets[...,indices[0]:indices[1]]
-        assert mel_predictions.size() == mel_targets.size()
-        mel_loss = self.mae_loss(mel_predictions, mel_targets) * 45.
+        wav_targets = wav_targets[...,indices[0]*self.hop_length:indices[1]*self.hop_length]
+        stft_loss = self.stft_loss_fn(wav_predictions.squeeze(1), wav_targets.squeeze(1)) 
+        
+        # mel_predictions = self.get_mel(wav_predictions)[...,:indices[1]-indices[0]]
+        # mel_targets = mel_targets[...,indices[0]:indices[1]]
+        # assert mel_predictions.size() == mel_targets.size()
+        # mel_loss = self.mse_loss(mel_predictions, mel_targets) * 25 #* 45.
 
         ctc_loss = self.sum_loss(
             attn_logprob=attn_logprob, in_lens=src_lens, out_lens=mel_lens)
@@ -154,7 +161,8 @@ class SynthesizerLoss(nn.Module):
         kl_loss = self.kld(z_p, m_p, logs_p, logs_q, mel_masks.unsqueeze(1))
 
         total_loss = (
-            mel_loss + 
+            # mel_loss + 
+            stft_loss + 
             duration_loss + 
             energy_loss + 
             ctc_loss + 
@@ -167,7 +175,8 @@ class SynthesizerLoss(nn.Module):
         )
         
         losses = {
-            "loss/g/mel": mel_loss,
+            # "loss/g/mel": mel_loss,
+            "loss/g/stft_loss": stft_loss,
             "loss/g/energy": energy_loss,
             "loss/g/duration": duration_loss,
             "loss/g/ctc_loss": ctc_loss, 
