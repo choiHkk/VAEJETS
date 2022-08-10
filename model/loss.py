@@ -115,6 +115,7 @@ class SynthesizerLoss(nn.Module):
         uv_targets.requires_grad = False
         energy_targets.requires_grad = False
         mel_targets.requires_grad = False
+        wav_targets.requires_grad = False
         
         (cwt_spec_predictions, cwt_mean_predictions, cwt_std_predictions) = pitch_predictions
         cwt_spec_predictions, uv_predictions = cwt_spec_predictions[:, :, :10], cwt_spec_predictions[:,:,-1]
@@ -138,13 +139,16 @@ class SynthesizerLoss(nn.Module):
         log_duration_predictions = log_duration_predictions.masked_select(src_masks)
         log_duration_targets = log_duration_targets.masked_select(src_masks)
         
-        wav_targets = wav_targets[...,indices[0]*self.hop_length:indices[1]*self.hop_length]
-        stft_loss = self.stft_loss_fn(wav_predictions.squeeze(1), wav_targets.squeeze(1)) 
+        wav_targets = wav_targets[:,indices[0]*self.hop_length:indices[1]*self.hop_length]
+        wav_predictions = wav_predictions.squeeze(1)
+        wav_targets = wav_targets.squeeze(1)
+        assert wav_predictions.size() == wav_targets.size()
+        stft_loss = self.stft_loss_fn(wav_predictions, wav_targets) * 45.
         
         # mel_predictions = self.get_mel(wav_predictions)[...,:indices[1]-indices[0]]
         # mel_targets = mel_targets[...,indices[0]:indices[1]]
         # assert mel_predictions.size() == mel_targets.size()
-        # mel_loss = self.mse_loss(mel_predictions, mel_targets) * 25 #* 45.
+        # mel_loss = self.mae_loss(mel_predictions, mel_targets) * 45.
 
         ctc_loss = self.sum_loss(
             attn_logprob=attn_logprob, in_lens=src_lens, out_lens=mel_lens)
@@ -175,17 +179,17 @@ class SynthesizerLoss(nn.Module):
         )
         
         losses = {
+            "loss/g/bin_loss": bin_loss, 
+            "loss/g/ctc_loss": ctc_loss, 
+            "loss/g/duration": duration_loss,
             # "loss/g/mel": mel_loss,
             "loss/g/stft_loss": stft_loss,
+            "loss/g/kl_loss": kl_loss, 
             "loss/g/energy": energy_loss,
-            "loss/g/duration": duration_loss,
-            "loss/g/ctc_loss": ctc_loss, 
-            "loss/g/bin_loss": bin_loss, 
             "loss/g/cwt_spec_loss": cwt_spec_loss, 
             "loss/g/cwt_mean_loss": cwt_mean_loss, 
             "loss/g/cwt_std_loss": cwt_std_loss, 
             "loss/g/uv_std_loss": uv_std_loss, 
-            "loss/g/kl_loss": kl_loss
         }
 
         return total_loss, losses

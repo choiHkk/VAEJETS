@@ -88,7 +88,7 @@ class AudioTextCollate(object):
             attn_prior = row[8]
             attn_prior_padded[i, :text.size(0), :spec.size(1)] = attn_prior
             
-            wav = row[0]
+            wav = row[9]
             wav_padded[i, :wav.size(0)] = wav
             
         return (
