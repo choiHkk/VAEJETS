@@ -1,7 +1,7 @@
 ## Introduction
 1. FastSpeech2, HiFi-GAN 오픈 소스를 활용하여 JETS(End-To-End)를 간단 구현하고 한국어 데이터셋(KSS)을 사용해 빠르게 학습합니다.
 2. Adversarial Training 에서 Discriminator는 VITS에서 사용한 모듈을 그대로 사용합니다.
-3. 본 레포지토리에서 HiFi-GAN에서 제안하는 L1 reconstructure loss를 그대로 사용하면 adversarial loss에서 issue가 발생했기 때문에 stft loss로 대체했습니다.
+3. 본 레포지토리에서 HiFi-GAN에서 제안하는 L1 reconstructure loss를 그대로 사용하면 adversarial loss에서 issue가 발생하기 때문에 stft loss로 대체했습니다.
 4. 확장성을 위하여 기존 FastSpeech2 구조에서 Decoder 대신 VITS의 Flow(CouplingLayer)를 사용하였습니다. (Quality, Voice conversion 목적)
 5. 기존 오픈소스는 MFA기반 preprocessing을 진행한 상태에서 학습을 진행하지만 본 레포지토리에서는 alignment learning 기반 학습을 진행하고 preprocessing으로 인해 발생할 수 있는 디스크 용량 문제를 방지하기 위해 data_utils.py로부터 학습 데이터가 feeding됩니다.
 6. conda 환경으로 진행해도 무방하지만 본 레포지토리에서는 docker 환경만 제공합니다. 기본적으로 ubuntu에 docker, nvidia-docker가 설치되었다고 가정합니다.
