@@ -42,7 +42,8 @@
 
 ## Reference
 1. [JETS: Jointly Training FastSpeech2 and HiFi-GAN for End to End Text to Speech](https://arxiv.org/abs/2203.16852)
-3. [FastSpeech2](https://github.com/ming024/FastSpeech2)
-4. [Comprehensive-Transformer-TTS](https://github.com/keonlee9420/Comprehensive-Transformer-TTS)
+2. [Comprehensive-Transformer-TTS](https://github.com/keonlee9420/Comprehensive-Transformer-TTS)
+3. [Comprehensive-E2E-TTS](https://github.com/keonlee9420/Comprehensive-E2E-TTS)
+4. [FastSpeech2](https://github.com/ming024/FastSpeech2)
 5. [HiFi-GAN](https://github.com/jik876/hifi-gan)
 6. [VITS](https://github.com/jaywalnut310/vits)
