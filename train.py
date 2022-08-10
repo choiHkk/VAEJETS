@@ -10,7 +10,7 @@ from tqdm import tqdm
 from utils.model import get_model, get_param_num
 from utils.tools import to_device, log, clip_grad_value_, AttrDict
 from model import VAEJETSLoss
-from data_utils import AudioTextDataset, AudioTextCollate, DataLoader
+from data_utils import AudioTextDataset, AudioTextCollate, DataLoader, DistributedBucketSampler
 from evaluate import evaluate
 import json
 import random
@@ -30,17 +30,23 @@ def main(args, configs):
         preprocess_config['path']['training_files'], preprocess_config)
     
     batch_size = train_config["optimizer"]["batch_size"]
+    train_sampler = DistributedBucketSampler(
+        dataset,
+        batch_size,
+        [32,300,400,500,600,700,800,900,1000],
+        num_replicas=1,
+        rank=0,
+        shuffle=True)
     collate_fn = AudioTextCollate()
     loader = DataLoader(
         dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        collate_fn=collate_fn, 
         num_workers=8, 
+        shuffle=False,
         pin_memory=True, 
-        drop_last=True
+        collate_fn=collate_fn, 
+        batch_sampler=train_sampler
     )
-
+    
     # Prepare model
     (model, discriminator, 
      model_optimizer, discriminator_optimizer, 
