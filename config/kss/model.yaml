@@ -7,8 +7,8 @@ transformer:
   encoder_hidden: 192
   conv_filter_size: 768
   conv_kernel_size: [9, 1]
-  encoder_dropout: 0.5
-  decoder_dropout: 0.5
+  encoder_dropout: 0.1
+  decoder_dropout: 0.1
 
 posterior_encoder:
   posterior_encoder_kernel_size: 5 
