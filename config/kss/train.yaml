@@ -3,14 +3,9 @@ path:
   log_path: "./output/log/kss"
   result_path: "./output/result/kss"
 optimizer:
-  batch_size: 16
+  batch_size: 32
   betas: [0.8, 0.99]
   eps: 0.000000001
-  weight_decay: 0.0
-  grad_acc_step: 1
-  warm_up_step: 1
-  anneal_steps: [300000, 400000, 500000]
-  anneal_rate: 0.3
   learning_rate: 0.0002
   lr_decay: 0.999875
 step:

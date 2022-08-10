@@ -135,8 +135,8 @@ class VarianceAdaptor(nn.Module):
         gen=False, 
     ):
         memory = x.clone()
-        g_d = self.linear_p_g(g.transpose(1,2))
-        log_duration_prediction = self.duration_predictor((x.detach()+g_d.detach()), src_mask)
+        log_duration_prediction = self.duration_predictor(
+            (x.detach()+self.linear_p_g(g.transpose(1,2)).detach()), src_mask)
         
         if not gen:
             attn_s, attn_logprob = self.aligner(
@@ -370,8 +370,6 @@ class AlignmentEncoder(torch.nn.Module):
         n_att_channels = model_config['variance_predictor']['filter_size']
         n_text_channels = model_config['transformer']['encoder_hidden']
         temperature = model_config['temperature']
-        multi_speaker = model_config['multi_speaker']
-        
         
         self.temperature = temperature
         self.softmax = torch.nn.Softmax(dim=3)
@@ -420,9 +418,8 @@ class AlignmentEncoder(torch.nn.Module):
             ),
         )
 
-        if multi_speaker:
-            self.key_spk_proj = Linear(gin_channels, n_text_channels)
-            self.query_spk_proj = Linear(gin_channels, n_spec_channels)
+        self.key_spk_proj = Linear(gin_channels, n_text_channels)
+        self.query_spk_proj = Linear(gin_channels, n_spec_channels)
 
     def forward(self, queries, keys, mask=None, attn_prior=None, g=None):
         """Forward pass of the aligner encoder.

@@ -68,7 +68,6 @@ def main(args, configs):
 
     # Training
     step = args.restore_step + 1
-    grad_acc_step = train_config["optimizer"]["grad_acc_step"]
     total_step = train_config["step"]["total_step"]
     log_step = train_config["step"]["log_step"]
     save_step = train_config["step"]["save_step"]
@@ -98,7 +97,7 @@ def main(args, configs):
             # Discriminator Backward
             discriminator_optimizer.zero_grad()
             loss_disc.backward()
-            grad_norm_discriminator = clip_grad_value_(discriminator.parameters(), 1.0)
+            grad_norm_discriminator = clip_grad_value_(discriminator.parameters(), None)
             discriminator_optimizer.step()
             
             # Generator
@@ -115,7 +114,7 @@ def main(args, configs):
             # Generator Backward
             model_optimizer.zero_grad()
             loss_model.backward()
-            grad_norm_model = clip_grad_value_(model.parameters(), 1.0)
+            grad_norm_model = clip_grad_value_(model.parameters(), None)
             model_optimizer.step()
             
             if step % log_step == 0:
