@@ -4,7 +4,7 @@ import json
 import torch
 import numpy as np
 
-from model import VAEJETSSynthesizer, MultiPeriodDiscriminator
+from model import VAEJETSSynthesizer, MultiScaleDiscriminator#, MultiPeriodDiscriminator
 
 
 def get_model(args, configs, device, train=False):
@@ -20,7 +20,8 @@ def get_model(args, configs, device, train=False):
         model.load_state_dict(ckpt["model"])
 
     if train:
-        discriminator = MultiPeriodDiscriminator().to(device)
+        # discriminator = MultiPeriodDiscriminator().to(device)
+        discriminator = MultiScaleDiscriminator().to(device)
         
         model_optimizer = torch.optim.AdamW(
             model.parameters(), 

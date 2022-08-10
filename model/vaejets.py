@@ -1,6 +1,7 @@
 from .modules import (
     VarianceAdaptor, 
-    MultiPeriodDiscriminator, 
+    # MultiPeriodDiscriminator, 
+    MultiScaleDiscriminator, 
     Generator, 
     ResidualCouplingBlock, 
     PosteriorEncoder, 
