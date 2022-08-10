@@ -14,6 +14,6 @@ step:
   val_step: 1000
   save_step: 1000
 duration:
-  binarization_start_steps: 6000
-  binarization_loss_enable_steps: 18000
+  binarization_start_steps: 0 # 6000
+  binarization_loss_enable_steps: 0 # 18000
   binarization_loss_warmup_steps: 10000
