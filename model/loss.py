@@ -114,7 +114,7 @@ class SynthesizerLoss(nn.Module):
         (cwt_spec_predictions, cwt_mean_predictions, cwt_std_predictions) = pitch_predictions
         cwt_spec_predictions, uv_predictions = cwt_spec_predictions[:, :, :10], cwt_spec_predictions[:,:,-1]
         
-        cwt_spec_loss = self.mae_loss(cwt_spec_predictions, cwt_spec_targets)
+        cwt_spec_loss = self.mse_loss(cwt_spec_predictions, cwt_spec_targets)
         cwt_mean_loss = self.mse_loss(cwt_mean_predictions, cwt_mean_targets)
         cwt_std_loss = self.mse_loss(cwt_std_predictions, cwt_std_targets)
         
@@ -148,7 +148,7 @@ class SynthesizerLoss(nn.Module):
                 (step-self.binarization_loss_enable_steps) / self.binarization_loss_warmup_steps, 1.0) * 1.0
         bin_loss = self.bin_loss(hard_attention=attn_hard, soft_attention=attn_soft) * bin_loss_weight
         
-        energy_loss = self.mse_loss(energy_predictions, energy_targets)
+        energy_loss = self.mae_loss(energy_predictions, energy_targets)
         duration_loss = self.mse_loss(log_duration_predictions, log_duration_targets)
         
         kl_loss = self.kld(z_p, m_p, logs_p, logs_q, mel_masks.unsqueeze(1))

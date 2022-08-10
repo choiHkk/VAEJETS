@@ -24,7 +24,7 @@ residual_coupling_block:
 variance_predictor:
   filter_size: 256
   kernel_size: 3
-  dropout: 0.1
+  dropout: 0.5
   cwt_hidden_size: 128
   cwt_std_scale: 0.8
   cwt_out_dims: 11

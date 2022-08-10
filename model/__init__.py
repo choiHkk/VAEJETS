@@ -1,2 +1,2 @@
-from .vaejets import VAEJETSSynthesizer, MultiScaleDiscriminator#, MultiPeriodDiscriminator
+from .vaejets import VAEJETSSynthesizer, MultiPeriodDiscriminator
 from .loss import VAEJETSLoss
