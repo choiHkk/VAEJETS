@@ -62,6 +62,7 @@ class VAEJETSSynthesizer(nn.Module):
         d_control=1.0,
         step=None, 
         gen=False, 
+        noise_scale=1.0, 
     ):
         src_masks = get_mask_from_lengths(src_lens, max_src_len)
         mel_masks = (
@@ -115,7 +116,7 @@ class VAEJETSSynthesizer(nn.Module):
                 hop_size=self.preprocess_config["preprocessing"]["stft"]["hop_length"])
         else:
             m_q, logs_q, indices = None, None, [None, None]
-            z_p = m_p + torch.randn_like(m_p) * torch.exp(logs_p) # * noise_scale -> 0.667
+            z_p = m_p + torch.randn_like(m_p) * torch.exp(logs_p) * noise_scale 
             z = self.flow(z_p, (~mel_masks).float().unsqueeze(1), g=g, reverse=True)
         
         wav = self.generator(z, g=g)
