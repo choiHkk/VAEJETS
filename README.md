@@ -35,9 +35,11 @@
 9. (OPTIONAL) `tensorboard --logdir=outdir/logdir`
 
 ## Tensorboard losses
+![tensorboard-losses](https://user-images.githubusercontent.com/69423543/184098829-5b010983-0ba7-4548-8c93-65ba7d7a95ed.png)
 
 
 ## Tensorboard Stats
+![tensorboard-images](https://user-images.githubusercontent.com/69423543/184098838-96a21194-b503-4e06-bcdf-8ced38dcf2ed.png)
 
 
 ## Reference
