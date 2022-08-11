@@ -142,3 +142,16 @@ class VAEJETSSynthesizer(nn.Module):
             logs_q
         )
     
+    def voice_conversion(self, mels, mel_lens, max_mel_len, sid_src, sid_tgt):
+        mel_masks = (
+            get_mask_from_lengths(mel_lens, max_mel_len)
+            if mel_lens is not None
+            else None
+        )
+        g_src = self.speaker_emb(sid_src).unsqueeze(-1)
+        g_tgt = self.speaker_emb(sid_tgt).unsqueeze(-1)
+        z, m_q, logs_q, y_mask = self.posterior_encoder(mels, (~mel_masks).float().unsqueeze(1), g=g_src)
+        z_p = self.flow(z, y_mask, g=g_src)
+        z_hat = self.flow(z_p, y_mask, g=g_tgt, reverse=True)
+        o_hat = self.generator(z_hat * y_mask, g=g_tgt)
+        return o_hat, y_mask, (z, z_p, z_hat)
