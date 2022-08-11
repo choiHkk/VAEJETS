@@ -143,11 +143,7 @@ class VAEJETSSynthesizer(nn.Module):
         )
     
     def voice_conversion(self, mels, mel_lens, max_mel_len, sid_src, sid_tgt):
-        mel_masks = (
-            get_mask_from_lengths(mel_lens, max_mel_len)
-            if mel_lens is not None
-            else None
-        )
+        mel_masks = get_mask_from_lengths(mel_lens, max_mel_len)
         g_src = self.speaker_emb(sid_src).unsqueeze(-1)
         g_tgt = self.speaker_emb(sid_tgt).unsqueeze(-1)
         z, m_q, logs_q, y_mask = self.posterior_encoder(mels, (~mel_masks).float().unsqueeze(1), g=g_src)
